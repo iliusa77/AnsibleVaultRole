@@ -13,3 +13,10 @@
   roles:
     - vault-init
     - vault-unseal
+
+- hosts: all
+  become: yes
+  become_user: root
+  become_method: sudo
+  roles:
+    - vault-customization

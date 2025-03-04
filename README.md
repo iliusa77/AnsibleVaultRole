@@ -16,3 +16,8 @@ Once done run command:
 ```
 ansible-playbook playbook.yml
 ```
+
+For policy deploy run command:
+```
+ansible-playbook playbook.yml --tags 'policy'
+```

@@ -1,0 +1,21 @@
+- name: Create custom Vault policy
+  template:
+    src: policy.hcl.j2
+    dest: "{{ vault_policy_path }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+  tags:
+    - policy
+
+- name: Get root token
+  debug: 
+    msg: "{{ lookup('file', 'rootKey/rootkey') }}"
+  register: root_token
+  tags: policy
+
+- name: Add custom Vault policy
+  shell: "vault login {{ root_token.msg }} && vault policy write custom-policy {{ vault_policy_path }}"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  tags: policy

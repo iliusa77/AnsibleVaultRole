@@ -1,0 +1,3 @@
+vault_user: "vault"
+vault_group: "vault"
+vault_policy_path: "/etc/policy.hcl"
