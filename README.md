@@ -19,5 +19,5 @@ ansible-playbook playbook.yml
 
 For customization run command:
 ```
-ansible-playbook playbook.yml --tags 'policy,versioning,secrets'
+ansible-playbook playbook.yml --tags 'nginx,policy,versioning,secrets'
 ```

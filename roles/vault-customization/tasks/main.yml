@@ -1,3 +1,27 @@
+- name: Install nginx
+  package:
+    name:
+      - nginx 
+      - net-tools
+    state: present
+  tags: nginx
+
+- name: Create Nginx virtualhost
+  template: 
+    src: nginx_virtualhost.j2
+    dest: "/etc/nginx/sites-available/vault.conf"
+  tags: nginx
+
+- name: Enable Nginx virtualbox
+  file:
+    src: "/etc/nginx/sites-available/vault.conf" 
+    dest: "/etc/nginx/sites-enabled/vault.conf"
+    state: link
+  notify:
+    - restart nginx
+  tags: nginx
+
+
 - name: Create custom Vault policy
   template:
     src: policy.hcl.j2
