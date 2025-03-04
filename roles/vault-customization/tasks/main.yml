@@ -11,7 +11,10 @@
   debug: 
     msg: "{{ lookup('file', 'rootKey/rootkey') }}"
   register: root_token
-  tags: policy
+  tags: 
+    - policy
+    - secrets
+    - versioning
 
 - name: Add custom Vault policy
   shell: "vault login {{ root_token.msg }} && vault policy write custom-policy {{ vault_policy_path }}"
@@ -26,3 +29,18 @@
     VAULT_ADDR: "https://127.0.0.1:8200"
     VAULT_SKIP_VERIFY: "true"
   tags: versioning
+  ignore_errors: yes
+
+- name: Add web secret in Vault
+  shell: "vault login {{ root_token.msg }} && vault kv put -mount=secrets web admin=pa$$w0rd"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  tags: secrets
+
+- name: Add database secret in Vault
+  shell: "vault login {{ root_token.msg }} && vault kv put -mount=secrets database root=password"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  tags: secrets
