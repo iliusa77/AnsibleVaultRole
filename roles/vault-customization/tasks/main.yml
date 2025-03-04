@@ -19,3 +19,10 @@
     VAULT_ADDR: "https://127.0.0.1:8200"
     VAULT_SKIP_VERIFY: "true"
   tags: policy
+
+- name: Enable versioning
+  shell: "vault login {{ root_token.msg }} && vault secrets enable -version=2 -path=secrets kv"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  tags: versioning

@@ -17,7 +17,7 @@ Once done run command:
 ansible-playbook playbook.yml
 ```
 
-For policy deploy run command:
+For policy deploy and enable versioning run command:
 ```
-ansible-playbook playbook.yml --tags 'policy'
+ansible-playbook playbook.yml --tags 'policy,versioning'
 ```
