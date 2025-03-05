@@ -21,3 +21,10 @@ For customization run command:
 ```
 ansible-playbook playbook.yml --tags 'nginx,policy,versioning,secrets'
 ```
+
+Manual generation basic auth credentials (add additional credentials)
+```
+sudo htpasswd /etc/nginx/.htpasswd admin
+New password:
+Re-type new password:
+```

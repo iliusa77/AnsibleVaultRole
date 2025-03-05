@@ -3,7 +3,12 @@
     name:
       - nginx 
       - net-tools
+      - apache2-utils
     state: present
+  tags: nginx
+
+- name: Basic auth configuration
+  shell: "sudo htpasswd -b -c /etc/nginx/.htpasswd {{ basic_auth_user }} {{ basic_auth_password }}"
   tags: nginx
 
 - name: Create Nginx virtualhost
