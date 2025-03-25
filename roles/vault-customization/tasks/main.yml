@@ -11,13 +11,41 @@
   shell: "sudo htpasswd -b -c /etc/nginx/.htpasswd {{ basic_auth_user }} {{ basic_auth_password }}"
   tags: nginx
 
+- name: Prepare folder for SSL certificates
+  file:
+    path: /etc/nginx/ssl
+    state: directory
+    mode: '0755'
+  tags: nginx
+
+- name: Generate self signed SSL certificates
+  command: >
+    openssl req
+      -new
+      -newkey rsa:4096
+      -days 365
+      -nodes
+      -x509
+      -subj "/C=US/ST=NY/L=NY/O=NA/CN={{ nginx_domain }}"
+      -keyout /etc/nginx/ssl/{{ nginx_domain }}.key
+      -out /etc/nginx/ssl/{{ nginx_domain }}.pem
+  tags: nginx
+
+- name: Give permissions to folder for SSL certificates
+  file:
+    path: /etc/nginx/ssl
+    owner: www-data
+    group: www-data
+    recurse: true
+  tags: nginx
+
 - name: Create Nginx virtualhost
   template: 
     src: nginx_virtualhost.j2
     dest: "/etc/nginx/sites-available/vault.conf"
   tags: nginx
 
-- name: Enable Nginx virtualbox
+- name: Enable Nginx virtualhost
   file:
     src: "/etc/nginx/sites-available/vault.conf" 
     dest: "/etc/nginx/sites-enabled/vault.conf"
@@ -27,10 +55,19 @@
   tags: nginx
 
 
-- name: Create custom Vault policy
+- name: Create RO Vault policy
   template:
-    src: policy.hcl.j2
-    dest: "{{ vault_policy_path }}"
+    src: ro-policy.hcl.j2
+    dest: "{{ vault_ro_policy_path }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+  tags:
+    - policy
+
+- name: Create RW Vault policy
+  template:
+    src: rw-policy.hcl.j2
+    dest: "{{ vault_rw_policy_path }}"
     owner: "{{ vault_user }}"
     group: "{{ vault_group }}"
   tags:
@@ -42,15 +79,51 @@
   register: root_token
   tags: 
     - policy
+    - token
     - secrets
     - versioning
 
-- name: Add custom Vault policy
-  shell: "vault login {{ root_token.msg }} && vault policy write custom-policy {{ vault_policy_path }}"
+- name: Add RO policy
+  shell: "vault login {{ root_token.msg }} && vault policy write ro-policy {{ vault_ro_policy_path }}"
   environment:
     VAULT_ADDR: "https://127.0.0.1:8200"
     VAULT_SKIP_VERIFY: "true"
   tags: policy
+
+- name: Add RW policy
+  shell: "vault login {{ root_token.msg }} && vault policy write rw-policy {{ vault_rw_policy_path }}"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  tags: policy
+
+- name: Add RO token
+  shell: "vault login {{ root_token.msg }} && vault token create -policy=ro-policy -format json | tee ~/vault-roKey"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  register: vault_ro_token_results
+  tags: token
+
+- name: Add RW token
+  shell: "vault login {{ root_token.msg }} && vault token create -policy=rw-policy -format json | tee ~/vault-rwKey"
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"
+    VAULT_SKIP_VERIFY: "true"
+  register: vault_rw_token_results
+  tags: token
+
+- name: Fetch RO Token file
+  fetch:
+    src: "~/vault-roKey"
+    dest: "{{ro_token_dir_output}}"
+  tags: token
+
+- name: Fetch RW Token file
+  fetch:
+    src: "~/vault-rwKey"
+    dest: "{{rw_token_dir_output}}"
+  tags: token
 
 - name: Enable versioning
   shell: "vault login {{ root_token.msg }} && vault secrets enable -version=2 -path=secrets kv"

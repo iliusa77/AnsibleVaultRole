@@ -1,4 +1,6 @@
 rootKey/
 unsealKey/
+roKey/
+rwKey/
 private_key
 .vagrant

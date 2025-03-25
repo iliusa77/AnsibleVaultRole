@@ -1,6 +1,10 @@
 server {
-    listen 80;
-    server_name {{ nginx_domain }};
+    listen              443 ssl;
+    server_name        {{ nginx_domain }};
+    ssl_certificate     /etc/nginx/ssl/{{ nginx_domain }}.pem;
+    ssl_certificate_key /etc/nginx/ssl/{{ nginx_domain }}.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;    
     access_log /var/log/nginx/{{ nginx_domain }}-access.log;
     error_log /var/log/nginx/{{ nginx_domain }}-error.log;
 

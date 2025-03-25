@@ -10,7 +10,21 @@
     state: directory
   delegate_to: localhost
 
-- name: Initialise Vault operator
+- name: Create RO token directory
+  file:
+    path: "{{ ro_token_dir_output }}"
+    state: directory
+  delegate_to: localhost
+  tags: token
+
+- name: Create RW token directory
+  file:
+    path: "{{ rw_token_dir_output }}"
+    state: directory
+  delegate_to: localhost
+  tags: token
+
+- name: Initialise Vault operator with HTTPS
   shell: vault operator init -key-shares=5 -key-threshold=3 -format json
   environment:
     VAULT_ADDR: "https://127.0.0.1:8200"

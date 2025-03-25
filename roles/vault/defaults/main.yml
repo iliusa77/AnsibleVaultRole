@@ -1,3 +1,6 @@
 vault_user: "vault"
 vault_group: "vault"
 vault_config_path: "/etc/vault.hcl"
+AWS_ACCESS_KEY: "test"
+AWS_SECRET_KEY: "test"
+AWS_VAULT_DATA_S3_BUCKET: "test"

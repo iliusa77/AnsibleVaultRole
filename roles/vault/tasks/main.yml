@@ -31,18 +31,18 @@
     createhome: "no"
     state: present
 
-# - name: config file
-#   template:
-#     src: vault.hcl.j2
-#     dest: "{{ vault_config_path }}"
-#     owner: "{{ vault_user }}"
-#     group: "{{ vault_group }}"
+- name: config file
+  template:
+    src: vault.hcl.j2
+    dest: "{{ vault_config_path }}"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
 
-- name: Configure vault.env
-  blockinfile: |
-    dest=/etc/vault.d/vault.env
-    content="VAULT_API_ADDR=https://127.0.0.1:8200
-      VAULT_API_SKIP_VERIFY=true"
+# - name: Configure vault.env
+#   blockinfile: |
+#     dest=/etc/vault.d/vault.env
+#     content="VAULT_API_ADDR=https://127.0.0.1:8200
+#       VAULT_API_SKIP_VERIFY=true"
 
 - name: vault service
   service:
