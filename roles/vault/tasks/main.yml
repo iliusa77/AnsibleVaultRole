@@ -1,4 +1,6 @@
-
+- name: Remove GPG key
+  shell: rm -rf /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  run_once: true
 
 - name: Add GPG key
   shell: wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg

@@ -48,3 +48,68 @@
     content: "{{ vault_init_parsed.root_token }}"
     dest: "{{root_token_dir_output}}/rootkey"
   delegate_to: localhost
+
+- name: Create scripts folder for auto_unseal 
+  become: yes
+  become_user: root
+  file:
+    path: /scripts
+    state: directory
+  tags: auto_unseal 
+
+- name: Create an auto_unseal script
+  become: yes
+  become_user: root
+  template: 
+    src: unseal.sh.j2
+    dest: /scripts/unseal.sh
+    mode: u=rwx,g=rwx,o=rx
+  tags: auto_unseal
+
+# - name: Write unseal keys to unseal script
+#   become: yes
+#   become_user: root
+#   copy:
+#     dest: /scripts/unseal.sh
+#     content: vault operator unseal {{ item }}
+#   with_items: "{{ vault_init_parsed.unseal_keys_hex }}"
+#   tags: auto_unseal 
+
+- name: Read unseal keys from files
+  shell: cat {{ unseal_keys_dir_output }}/{{ item }}
+  with_items: 
+    - unseal_key_0
+    - unseal_key_1
+    - unseal_key_3
+  delegate_to: localhost
+  register: unseal_keys
+  tags: auto_unseal
+
+- name: test
+  debug: msg="{{ unseal_keys.results[0].stdout_lines | replace('[','') | replace(']','') }}"
+  tags: auto_unseal
+
+- name: Write unseal keys to unseal script
+  become: yes
+  become_user: root
+  shell: |
+    echo "vault operator unseal {{ unseal_keys.results[0].stdout_lines | replace('[','') | replace(']','') }}"  >> /scripts/unseal.sh
+    echo "vault operator unseal {{ unseal_keys.results[1].stdout_lines | replace('[','') | replace(']','') }}"  >> /scripts/unseal.sh
+    echo "vault operator unseal {{ unseal_keys.results[2].stdout_lines | replace('[','') | replace(']','') }}"  >> /scripts/unseal.sh
+  tags: auto_unseal 
+
+- name: Create vault-unseal.service unit file
+  become: yes
+  become_user: root
+  template: 
+    src: vault-unseal.service.j2
+    dest: /etc/systemd/system/vault-unseal.service
+  tags: auto_unseal
+
+- name: Restart vault-unseal.service
+  systemd_service:
+    name: /etc/systemd/system/vault-unseal.service
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: auto_unseal
